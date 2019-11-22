@@ -11,7 +11,7 @@ namespace SkiaSharpDemo
 		{
 			InitializeComponent();
 
-			MainPage = new NavigationPage(new MainPage());
+			MainPage = new NavigationPage(new GestureSurfacePage());
 		}
 
 		protected override void OnStart()

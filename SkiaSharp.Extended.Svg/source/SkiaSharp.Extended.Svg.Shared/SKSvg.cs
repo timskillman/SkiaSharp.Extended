@@ -456,6 +456,30 @@ namespace SkiaSharp.Extended.Svg
 					path.MoveTo(line.P1);
 					path.LineTo(line.P2);
 					break;
+                case "use": //FIX - nested use
+                    if (e.HasAttributes)
+                    {
+                        var href = ReadHref(e);
+                        if (href != null)
+                        {
+                            // create a deep copy as we will copy attributes
+                            href = new XElement(href);
+                            var attributes = e.Attributes();
+                            foreach (var attribute in attributes)
+                            {
+                                var name = attribute.Name.LocalName;
+                                if (!name.Equals("href", StringComparison.OrdinalIgnoreCase) &&
+                                    !name.Equals("id", StringComparison.OrdinalIgnoreCase) &&
+                                    !name.Equals("transform", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    href.SetAttributeValue(attribute.Name, attribute.Value);
+                                }
+                            }
+
+                            path = ReadElement(href, style);
+                        }
+                    }
+                    break;
 				default:
 					path.Dispose();
 					path = null;

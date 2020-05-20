@@ -324,25 +324,10 @@ namespace SkiaSharp.Extended.Svg
 				case "use":
 					if (e.HasAttributes)
 					{
-						var href = ReadHref(e);
-						if (href != null)
-						{
-							// create a deep copy as we will copy attributes
-							href = new XElement(href);
-							var attributes = e.Attributes();
-							foreach (var attribute in attributes)
-							{
-								var name = attribute.Name.LocalName;
-								if (!name.Equals("href", StringComparison.OrdinalIgnoreCase) &&
-									!name.Equals("id", StringComparison.OrdinalIgnoreCase) &&
-									!name.Equals("transform", StringComparison.OrdinalIgnoreCase))
-								{
-									href.SetAttributeValue(attribute.Name, attribute.Value);
-								}
-							}
-
-							ReadElement(href, canvas, stroke?.Clone(), fill?.Clone());
-						}
+                        var href = ResolveRef(e);
+                        if (href != null) {
+                            ReadElement(href, canvas, ref PathElements, stroke?.Clone(), fill?.Clone());
+                        }
 					}
 					break;
 				case "switch":
@@ -459,23 +444,9 @@ namespace SkiaSharp.Extended.Svg
                 case "use": //FIX - nested use
                     if (e.HasAttributes)
                     {
-                        var href = ReadHref(e);
+                        var href = ResolveRef(e);
                         if (href != null)
                         {
-                            // create a deep copy as we will copy attributes
-                            href = new XElement(href);
-                            var attributes = e.Attributes();
-                            foreach (var attribute in attributes)
-                            {
-                                var name = attribute.Name.LocalName;
-                                if (!name.Equals("href", StringComparison.OrdinalIgnoreCase) &&
-                                    !name.Equals("id", StringComparison.OrdinalIgnoreCase) &&
-                                    !name.Equals("transform", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    href.SetAttributeValue(attribute.Name, attribute.Value);
-                                }
-                            }
-
                             path = ReadElement(href, style);
                         }
                     }
@@ -1336,6 +1307,28 @@ namespace SkiaSharp.Extended.Svg
 			return union;
 		}
 
+        private XElement ResolveRef(XElement e)
+        {
+            var href = ReadHref(e);
+            if (href != null)
+            {
+                // create a deep copy as we will copy attributes
+                href = new XElement(href);
+                var attributes = e.Attributes();
+                foreach (var attribute in attributes)
+                {
+                    var name = attribute.Name.LocalName;
+                    if (!name.Equals("href", StringComparison.OrdinalIgnoreCase) &&
+                        !name.Equals("id", StringComparison.OrdinalIgnoreCase) &&
+                        !name.Equals("transform", StringComparison.OrdinalIgnoreCase))
+                    {
+                        href.SetAttributeValue(attribute.Name, attribute.Value);
+                    }
+                }
+            }
+            return href;
+        }
+		
 		private XElement ReadHref(XElement e)
 		{
 			var href = ReadHrefString(e)?.Substring(1);
